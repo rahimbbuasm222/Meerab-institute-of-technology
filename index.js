@@ -1,4 +1,4 @@
-require('dotenv').config(); // এটি সবার উপরে থাকতে হবে
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -9,28 +9,27 @@ const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.static('public')); // ছবি বা স্ট্যাটিক ফাইলের ফোল্ডার
+app.use(express.json({ limit: '50mb' })); // বড় ডাটা আপলোডের জন্য লিমিট বাড়ানো হলো
+app.use(express.static('public'));
 
 // ---------------------------------------------
-// ১. MongoDB কানেকশন (Database Connection)
+// ১. MongoDB কানেকশন
 // ---------------------------------------------
 const mongoUri = process.env.MONGO_URI;
 
-// চেক করা হচ্ছে লিংক পাওয়া যাচ্ছে কিনা
 if (!mongoUri) {
-    console.error("❌ Error: .env ফাইল থেকে MONGO_URI পাওয়া যাচ্ছে না। দয়া করে .env ফাইল চেক করুন।");
+    console.error("❌ Error: .env ফাইল থেকে MONGO_URI পাওয়া যাচ্ছে না।");
 } else {
     mongoose.connect(mongoUri)
-        .then(() => console.log("✅ MongoDB Connected for Meerab Academy!"))
-        .catch(err => console.error("❌ Database Connection Error:", err));
+        .then(() => console.log("✅ MongoDB Connected for Meerab Institute!"))
+        .catch(err => console.error("❌ DB Connection Error:", err));
 }
 
 // ---------------------------------------------
-// ২. স্কিমা ও মডেল (Database Structure)
+// ২. স্কিমা ও মডেল
 // ---------------------------------------------
 
-// নোটিশের জন্য
+// নোটিশ স্কিমা
 const NoticeSchema = new mongoose.Schema({
     title: String,
     date: String,
@@ -38,7 +37,7 @@ const NoticeSchema = new mongoose.Schema({
 });
 const Notice = mongoose.model('Notice', NoticeSchema);
 
-// রেজাল্টের জন্য
+// রেজাল্ট স্কিমা
 const ResultSchema = new mongoose.Schema({
     studentName: String,
     roll: String,
@@ -50,7 +49,7 @@ const ResultSchema = new mongoose.Schema({
 const Result = mongoose.model('Result', ResultSchema);
 
 // ---------------------------------------------
-// ৩. পেজ রাউটিং (Frontend Pages Link)
+// ৩. পেজ রাউটিং
 // ---------------------------------------------
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'about.html')));
@@ -64,68 +63,62 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html'))
 // ---------------------------------------------
 
 // === নোটিশ API ===
-// সব নোটিশ দেখা
 app.get('/api/notices', async (req, res) => {
     try {
         const notices = await Notice.find().sort({ createdAt: -1 });
         res.json(notices);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// নোটিশ আপলোড
 app.post('/api/notices', async (req, res) => {
     try {
-        const newNotice = new Notice(req.body);
-        await newNotice.save();
-        res.json({ message: "Notice Added Successfully" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+        await new Notice(req.body).save();
+        res.json({ message: "Notice Added" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// নোটিশ ডিলিট
 app.delete('/api/notices/:id', async (req, res) => {
     try {
         await Notice.findByIdAndDelete(req.params.id);
         res.json({ message: "Notice Deleted" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // === রেজাল্ট API ===
-// রেজাল্ট আপলোড
+
+// ১. সিঙ্গেল রেজাল্ট আপলোড
 app.post('/api/results', async (req, res) => {
     try {
-        const newResult = new Result(req.body);
-        await newResult.save();
-        res.json({ message: "Result Saved Successfully" });
+        await new Result(req.body).save();
+        res.json({ message: "Result Saved" });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ২. বাল্ক আপলোড (একসাথে অনেকগুলো) - নতুন ফিচার
+app.post('/api/results/bulk', async (req, res) => {
+    try {
+        const results = req.body; // Array of results
+        if (!Array.isArray(results)) {
+            return res.status(400).json({ error: "ডাটা সঠিক ফরম্যাটে নেই (Array হতে হবে)" });
+        }
+        await Result.insertMany(results);
+        res.json({ message: "Bulk upload successful", count: results.length });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: "Bulk upload failed: " + err.message });
     }
 });
 
-// রেজাল্ট সার্চ (খোঁজা)
+// ৩. রেজাল্ট সার্চ
 app.get('/api/results/search', async (req, res) => {
     try {
         const { roll, examName } = req.query;
         const result = await Result.findOne({ roll, examName });
-        
-        if (result) {
-            res.json({ found: true, data: result });
-        } else {
-            res.json({ found: false, message: "Result not found" });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+        if (result) res.json({ found: true, data: result });
+        else res.json({ found: false });
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ---------------------------------------------
-// ৫. সার্ভার রান করা
-// ---------------------------------------------
+// সার্ভার স্টার্ট
 app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });
