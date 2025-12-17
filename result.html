@@ -1,0 +1,147 @@
+!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ফলাফল অনুসন্ধান - মীরাব ইন্সটিটিউট অফ টেকনোলজি</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f4f4; text-align: center; }
+        
+        /* মেনুবার (অন্য পেজের সাথে মিল রেখে) */
+        nav { background: #2c3e50; overflow: hidden; margin-bottom: 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        nav a { float: left; display: block; color: white; text-align: center; padding: 14px 20px; text-decoration: none; }
+        nav a:hover { background-color: #ddd; color: black; }
+
+        /* সার্চ বক্স ডিজাইন */
+        .search-container {
+            background: white;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-top: 6px solid #006a4e;
+        }
+
+        h2 { color: #006a4e; margin-bottom: 20px; }
+        
+        label { display: block; text-align: left; font-weight: bold; margin-top: 15px; color: #555; }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #006a4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #004d3a; }
+
+        /* রেজাল্ট কার্ড (লুকানো থাকবে) */
+        #result-card {
+            display: none; /* শুরুতে দেখা যাবে না */
+            margin-top: 30px;
+            background: #e8f5e9;
+            padding: 20px;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            text-align: left;
+        }
+        .result-item { margin: 10px 0; font-size: 16px; }
+        .gpa-score { color: #d32f2f; font-weight: bold; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- মেনুবার -->
+    <nav>
+        <a href="/">হোম</a>
+        <a href="/about">আমাদের সম্পর্কে</a>
+        <a href="/services">সেবাসমূহ</a>
+        <a href="/result">ফলাফল</a>
+        <a href="/gallery">গ্যালারি</a>
+        <a href="/admin" style="background: #e74c3c;">অ্যাডমিন</a>
+    </nav>
+
+    <div class="search-container">
+        <h2>🎓 ফলাফল অনুসন্ধান</h2>
+        <p>আপনার রোল নম্বর এবং পরীক্ষার নাম নির্বাচন করুন</p>
+
+        <!-- সার্চ ফর্ম -->
+        <label>পরীক্ষার নাম:</label>
+        <select id="examName">
+            <option value="SSC">SSC Result</option>
+            <option value="HSC">HSC Result</option>
+            <option value="BBA 1st Year">BBA 1st Year</option>
+            <option value="BBA 2nd Year">BBA 2nd Year</option>
+            <option value="BBA 3rd Year">BBA 3rd Year</option>
+            <option value="BBA 4th Year">BBA 4th Year</option>
+        </select>
+
+        <label>রোল নম্বর:</label>
+        <input type="number" id="roll" placeholder="রোল নম্বর লিখুন (যেমন: 101)" required>
+
+        <button onclick="searchResult()">ফলাফল দেখুন</button>
+
+        <!-- রেজাল্ট দেখানোর জায়গা -->
+        <div id="result-card">
+            <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 10px;">মার্কশিট / ট্রান্সক্রিপ্ট</h3>
+            <div class="result-item"><strong>নাম:</strong> <span id="res-name"></span></div>
+            <div class="result-item"><strong>রোল:</strong> <span id="res-roll"></span></div>
+            <div class="result-item"><strong>পরীক্ষা ও সাল:</strong> <span id="res-exam"></span></div>
+            <div class="result-item"><strong>ফলাফল (GPA):</strong> <span id="res-gpa" class="gpa-score"></span></div>
+        </div>
+    </div>
+
+    <script>
+        async function searchResult() {
+            const examName = document.getElementById('examName').value;
+            const roll = document.getElementById('roll').value;
+            const resultCard = document.getElementById('result-card');
+
+            // ভ্যালিডেশন
+            if(!roll) {
+                alert("দয়া করে রোল নম্বর দিন!");
+                return;
+            }
+
+            try {
+                // ব্যাকএন্ড API কল করা
+                const response = await fetch(`/api/results/search?roll=${roll}&examName=${examName}`);
+                const data = await response.json();
+
+                if (data.found) {
+                    // রেজাল্ট পাওয়া গেলে ডাটা বসানো
+                    resultCard.style.display = 'block';
+                    document.getElementById('res-name').innerText = data.data.studentName;
+                    document.getElementById('res-roll').innerText = data.data.roll;
+                    document.getElementById('res-exam').innerText = `${data.data.examName} - ${data.data.year}`;
+                    document.getElementById('res-gpa').innerText = data.data.gpa;
+                } else {
+                    // রেজাল্ট না পাওয়া গেলে
+                    resultCard.style.display = 'none';
+                    alert("❌ দুঃখিত! এই রোলের কোনো ফলাফল পাওয়া যায়নি।");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("সার্ভারে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
+            }
+        }
+    </script>
+
+</body>
+</html>
