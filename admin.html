@@ -1,189 +1,227 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Upload Panel</title>
+    <title>অ্যাডমিন প্যানেল - মীরাব ইন্সটিটিউট</title>
     <style>
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #e9ecef; }
         
-        /* মেনুবারের ডিজাইন */
-        nav { background: #2c3e50; overflow: hidden; margin-bottom: 50px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        nav a { float: left; display: block; color: white; text-align: center; padding: 14px 20px; text-decoration: none; font-size: 15px; }
+        /* মেনুবার */
+        nav { background: #2c3e50; overflow: hidden; margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        nav a { float: left; display: block; color: white; text-align: center; padding: 14px 20px; text-decoration: none; }
         nav a:hover { background-color: #ddd; color: black; }
 
-        /* অ্যাডমিন বক্সের ডিজাইন */
-        .admin-box { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); margin-bottom: 50px; }
-        h2 { text-align: center; color: #333; border-bottom: 2px solid #006a4e; padding-bottom: 10px; display: inline-block; }
-        .header-center { text-align: center; margin-bottom: 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
 
-        label { font-weight: bold; color: #555; display: block; margin-top: 15px; }
-        input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 15px; }
+        /* কার্ড ডিজাইন */
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+            margin-bottom: 40px; 
+            border-top: 5px solid #006a4e; /* সবুজ বর্ডার */
+        }
+
+        h2 { text-align: center; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-top: 0; }
         
-        /* ড্রপডাউন ফোকাস */
-        select:focus, input:focus { outline: 2px solid #006a4e; border-color: transparent; }
+        label { font-weight: bold; color: #555; display: block; margin-top: 15px; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 15px; }
+        
+        /* বাটন */
+        .btn-green { background: #006a4e; color: white; border: none; padding: 12px; width: 100%; margin-top: 20px; cursor: pointer; font-size: 16px; border-radius: 5px; }
+        .btn-green:hover { background: #004d3a; }
 
-        /* আপলোড বাটন */
-        .upload-btn { background: #006a4e; color: white; border: none; font-size: 16px; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
-        .upload-btn:hover { background: #004d3a; }
+        .btn-blue { background: #2980b9; color: white; border: none; padding: 12px; width: 100%; margin-top: 20px; cursor: pointer; font-size: 16px; border-radius: 5px; }
+        .btn-blue:hover { background: #1c5980; }
 
         /* লিস্ট ডিজাইন */
         #admin-notice-list li {
             background: #f8f9fa;
-            border-left: 5px solid #006a4e;
-            padding: 12px;
+            border-left: 5px solid #2980b9;
+            padding: 10px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .delete-btn {
-            background: #e74c3c;
-            width: auto;
-            padding: 6px 12px;
-            color: white;
-            font-size: 13px;
-            margin: 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .delete-btn:hover { background: #c0392b; }
-
-        .back-link { display: block; text-align: center; margin-top: 20px; text-decoration: none; color: #555; font-weight: bold; }
-        .back-link:hover { color: #006a4e; }
+        .delete-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
 
-    <!-- ১. মেনুবার -->
+    <!-- মেনুবার -->
     <nav>
         <a href="/">হোম</a>
         <a href="/about">আমাদের সম্পর্কে</a>
         <a href="/services">সেবাসমূহ</a>
         <a href="/gallery">গ্যালারি</a>
-        <!-- নতুন ফলাফল বাটন -->
         <a href="/result">ফলাফল</a>
-        <a href="/admin" style="background: #e74c3c;">অ্যাডমিন প্যানেল</a>
+        <a href="/admin" style="background: #e74c3c;">অ্যাডমিন</a>
     </nav>
 
-    <div class="admin-box">
-        <div class="header-center">
-            <h2>📢 তথ্য আপলোড কেন্দ্র</h2>
+    <div class="container">
+
+        <!-- ১. রেজাল্ট আপলোড ফর্ম (এটি নতুন যোগ হয়েছে) -->
+        <div class="card">
+            <h2>🎓 রেজাল্ট আপলোড করুন (Student Result)</h2>
+            <form onsubmit="uploadResult(event)">
+                <label>ছাত্রের নাম (Name):</label>
+                <input type="text" id="stdName" placeholder="নাম লিখুন..." required>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>রোল নম্বর:</label>
+                        <input type="number" id="stdRoll" placeholder="Roll No" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>সাল (Year):</label>
+                        <input type="number" id="stdYear" placeholder="2025" required>
+                    </div>
+                </div>
+                
+                <label>পরীক্ষার নাম:</label>
+                <select id="stdExam" required>
+                    <option value="">নির্বাচন করুন...</option>
+                    <option value="SSC">SSC Result</option>
+                    <option value="HSC">HSC Result</option>
+                    <option value="BBA 1st Year">BBA 1st Year</option>
+                    <option value="BBA 2nd Year">BBA 2nd Year</option>
+                    <option value="BBA 3rd Year">BBA 3rd Year</option>
+                    <option value="BBA 4th Year">BBA 4th Year</option>
+                </select>
+
+                <label>ফলাফল (GPA):</label>
+                <input type="text" id="stdGPA" placeholder="যেমন: 5.00" required>
+
+                <button type="submit" class="btn-green">💾 রেজাল্ট সেভ করুন</button>
+            </form>
         </div>
 
-        <!-- ২. মাল্টি-পারপাস আপলোড ফর্ম -->
-        <form onsubmit="uploadNotice(event)">
+        <!-- ২. নোটিশ আপলোড ফর্ম (আগেরটা) -->
+        <div class="card" style="border-top: 5px solid #2980b9;">
+            <h2>📢 সাধারণ নোটিশ আপলোড</h2>
+            <form onsubmit="uploadNotice(event)">
+                
+                <label>ধরণ নির্বাচন করুন:</label>
+                <select id="category" required>
+                    <option value="নোটিশ">সাধারণ নোটিশ</option>
+                    <option value="ফলাফল">রেজাল্ট নিউজ</option>
+                    <option value="ভর্তি">ভর্তি তথ্য</option>
+                    <option value="রুটিন">ক্লাস রুটিন</option>
+                </select>
+
+                <label>বিষয় / শিরোনাম:</label>
+                <input type="text" id="title" placeholder="নোটিশের বিষয়..." required>
+                
+                <label>তারিখ:</label>
+                <input type="date" id="date" required>
+                
+                <button type="submit" class="btn-blue">🚀 প্রকাশ করুন (Publish)</button>
+            </form>
+
+            <hr style="margin: 30px 0;">
             
-            <!-- ক্যাটাগরি সিলেক্ট অপশন (নতুন) -->
-            <label>ধরণ নির্বাচন করুন (Select Type):</label>
-            <select id="category" required>
-                <option value="নোটিশ">সাধারণ নোটিশ (General Notice)</option>
-                <option value="ফলাফল">পরীক্ষার ফলাফল (Exam Result)</option>
-                <option value="ভর্তি">ভর্তি তথ্য (Admission)</option>
-                <option value="রুটিন">ক্লাস রুটিন (Routine)</option>
-            </select>
+            <!-- নোটিশ লিস্ট -->
+            <h4 style="margin-bottom: 10px;">প্রকাশিত নোটিশ তালিকা:</h4>
+            <ul id="admin-notice-list" style="list-style: none; padding: 0;"></ul>
+        </div>
 
-            <label>বিষয় / শিরোনাম:</label>
-            <input type="text" id="title" placeholder="যেমন: বার্ষিক পরীক্ষার ফলাফল প্রকাশ..." required>
-            
-            <label>তারিখ:</label>
-            <input type="date" id="date" required>
-            
-            <button type="submit" class="upload-btn">প্রকাশ করুন (Publish)</button>
-        </form>
-
-        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ddd;">
-
-        <!-- ৩. ম্যানেজমেন্ট সেকশন -->
-        <h3 style="color: #333;">📋 প্রকাশিত তথ্যের তালিকা</h3>
-        <p style="font-size: 12px; color: #777;">* ডিলিট করতে পাসওয়ার্ড (admin123) প্রয়োজন হবে</p>
-        
-        <ul id="admin-notice-list" style="list-style: none; padding: 0;">
-            <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে লিস্ট লোড হবে -->
-        </ul>
-
-        <a href="/" class="back-link">⬅ মূল ওয়েবসাইটে ফিরে যান</a>
     </div>
 
     <script>
-        // ১. তথ্য আপলোড করার ফাংশন
+        // ============================
+        // ১. রেজাল্ট আপলোড করার ফাংশন
+        // ============================
+        async function uploadResult(event) {
+            event.preventDefault();
+            
+            // ডাটা সংগ্রহ
+            const resultData = {
+                studentName: document.getElementById('stdName').value,
+                roll: document.getElementById('stdRoll').value,
+                year: document.getElementById('stdYear').value,
+                examName: document.getElementById('stdExam').value,
+                gpa: document.getElementById('stdGPA').value
+            };
+
+            // সার্ভারে পাঠানো
+            const res = await fetch('/api/results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(resultData)
+            });
+
+            if(res.ok) {
+                alert("✅ ছাত্রের রেজাল্ট সফলভাবে ডাটাবেসে সেভ হয়েছে!");
+                event.target.reset(); // ফর্ম খালি করা
+            } else {
+                alert("❌ সমস্যা হয়েছে! আবার চেষ্টা করুন।");
+            }
+        }
+
+        // ============================
+        // ২. নোটিশ আপলোড করার ফাংশন
+        // ============================
         async function uploadNotice(event) {
             event.preventDefault();
             
             const category = document.getElementById('category').value;
-            const rawTitle = document.getElementById('title').value;
+            let title = document.getElementById('title').value;
             const date = document.getElementById('date').value;
 
-            // আমরা ক্যাটাগরি এবং টাইটেল একসাথে যোগ করে দেব
-            // যেমন: "[ফলাফল] বার্ষিক পরীক্ষা ২০২৫"
-            let finalTitle = rawTitle;
+            // টাইটেলে ক্যাটাগরি যোগ করা
             if(category !== 'নোটিশ') {
-                finalTitle = `[${category}] ${rawTitle}`;
+                title = `[${category}] ${title}`;
             }
 
             const response = await fetch('/api/notices', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: finalTitle, date: date })
+                body: JSON.stringify({ title, date })
             });
 
             if (response.ok) {
-                alert("✅ তথ্য সফলভাবে প্রকাশিত হয়েছে!");
+                alert("✅ নোটিশ প্রকাশিত হয়েছে!");
                 document.getElementById('title').value = '';
                 document.getElementById('date').value = '';
-                loadAdminNotices(); // লিস্ট আপডেট
+                loadAdminNotices(); 
             } else {
-                alert("❌ সমস্যা হয়েছে! সার্ভার চেক করুন।");
+                alert("❌ সমস্যা হয়েছে!");
             }
         }
 
-        // ২. লিস্ট দেখানোর ফাংশন
+        // ============================
+        // ৩. নোটিশ ডিলিট ও লোড ফাংশন
+        // ============================
         async function loadAdminNotices() {
-            try {
-                const response = await fetch('/api/notices');
-                const data = await response.json();
-                const list = document.getElementById('admin-notice-list');
-                list.innerHTML = '';
+            const response = await fetch('/api/notices');
+            const data = await response.json();
+            const list = document.getElementById('admin-notice-list');
+            list.innerHTML = '';
 
-                data.forEach(notice => {
-                    const li = document.createElement('li');
-                    
-                    // তারিখ ফরম্যাট করা
-                    const dateObj = new Date(notice.date);
-                    const formattedDate = dateObj.toLocaleDateString('bn-BD');
-
-                    li.innerHTML = `
-                        <span>
-                            <small style="color:#777;">${formattedDate}</small><br>
-                            <strong>${notice.title}</strong>
-                        </span>
-                        <button onclick="deleteNotice('${notice._id}')" class="delete-btn">Delete 🗑️</button>
-                    `;
-                    list.appendChild(li);
-                });
-            } catch (error) {
-                console.error("Error loading list:", error);
-            }
+            data.forEach(notice => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span><strong>${notice.date}:</strong> ${notice.title}</span>
+                    <button onclick="deleteNotice('${notice._id}')" class="delete-btn">Delete</button>
+                `;
+                list.appendChild(li);
+            });
         }
 
-        // ৩. সিকিউর ডিলিট ফাংশন
         async function deleteNotice(id) {
-            const password = prompt("⚠️ ডিলিট করতে অ্যাডমিন পাসওয়ার্ড দিন (admin123):");
-            
+            const password = prompt("ডিলিট করতে পাসওয়ার্ড দিন (admin123):");
             if (password === 'admin123') { 
-                if(confirm("আপনি কি নিশ্চিত? এটি আর ফেরত পাওয়া যাবে না।")) {
-                    await fetch('/api/notices/' + id, { method: 'DELETE' });
-                    alert("✅ মুছে ফেলা হয়েছে!");
-                    loadAdminNotices(); 
-                }
+                await fetch('/api/notices/' + id, { method: 'DELETE' });
+                alert("মুছে ফেলা হয়েছে!");
+                loadAdminNotices(); 
             } else if (password !== null) {
-                alert("❌ ভুল পাসওয়ার্ড!");
+                alert("ভুল পাসওয়ার্ড!");
             }
         }
 
-        // পেজ লোড হলে লিস্ট দেখাবে
         loadAdminNotices();
     </script>
 </body>
