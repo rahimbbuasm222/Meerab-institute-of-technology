@@ -9,7 +9,8 @@ const port = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); // বড় ডাটা আপলোডের জন্য লিমিট বাড়ানো হলো
+// বাল্ক আপলোডের জন্য সাইজ লিমিট বাড়ানো হয়েছে
+app.use(express.json({ limit: '50mb' })); 
 app.use(express.static('public'));
 
 // ---------------------------------------------
@@ -22,14 +23,14 @@ if (!mongoUri) {
 } else {
     mongoose.connect(mongoUri)
         .then(() => console.log("✅ MongoDB Connected for Meerab Institute!"))
-        .catch(err => console.error("❌ DB Connection Error:", err));
+        .catch(err => console.error("❌ DB Error:", err));
 }
 
 // ---------------------------------------------
-// ২. স্কিমা ও মডেল
+// ২. স্কিমা ও মডেল (Schema & Models)
 // ---------------------------------------------
 
-// নোটিশ স্কিমা
+// নোটিশ মডেল
 const NoticeSchema = new mongoose.Schema({
     title: String,
     date: String,
@@ -37,24 +38,26 @@ const NoticeSchema = new mongoose.Schema({
 });
 const Notice = mongoose.model('Notice', NoticeSchema);
 
-// রেজাল্ট স্কিমা (আপডেট করা হয়েছে)
+// রেজাল্ট মডেল (মার্কশিট সহ)
+// [এই অংশটি অবশ্যই রাউটের উপরে থাকতে হবে]
 const ResultSchema = new mongoose.Schema({
     studentName: String,
-    fatherName: String, // নতুন
-    motherName: String, // নতুন
+    fatherName: String,
+    motherName: String,
     roll: String,
-    regNo: String,      // নতুন
+    regNo: String,
     examName: String,
     year: String,
-    institute: String,  // নতুন
+    institute: String,
     gpa: String,
-    resultStatus: String, // পাস/ফেল
-    marks: Array,       // বিষয়ভিত্তিক নম্বর (Array)
+    resultStatus: String,
+    marks: Array, // বিষয়ভিত্তিক নম্বর রাখার জন্য
     createdAt: { type: Date, default: Date.now }
 });
+const Result = mongoose.model('Result', ResultSchema);
 
 // ---------------------------------------------
-// ৩. পেজ রাউটিং
+// ৩. পেজ রাউটিং (Page Routes)
 // ---------------------------------------------
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'about.html')));
@@ -78,14 +81,14 @@ app.get('/api/notices', async (req, res) => {
 app.post('/api/notices', async (req, res) => {
     try {
         await new Notice(req.body).save();
-        res.json({ message: "Notice Added" });
+        res.json({ message: "Success" });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/notices/:id', async (req, res) => {
     try {
         await Notice.findByIdAndDelete(req.params.id);
-        res.json({ message: "Notice Deleted" });
+        res.json({ message: "Deleted" });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -99,16 +102,19 @@ app.post('/api/results', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// ২. বাল্ক আপলোড (একসাথে অনেকগুলো) - নতুন ফিচার
+// ২. বাল্ক রেজাল্ট আপলোড (এখানেই আপনার সমস্যা ছিল, এখন ঠিক করা হয়েছে)
 app.post('/api/results/bulk', async (req, res) => {
     try {
-        const results = req.body; // Array of results
+        const results = req.body;
+        
         if (!Array.isArray(results)) {
             return res.status(400).json({ error: "ডাটা সঠিক ফরম্যাটে নেই (Array হতে হবে)" });
         }
+
         await Result.insertMany(results);
         res.json({ message: "Bulk upload successful", count: results.length });
     } catch (err) {
+        console.error("Bulk Upload Error:", err);
         res.status(500).json({ error: "Bulk upload failed: " + err.message });
     }
 });
@@ -118,8 +124,12 @@ app.get('/api/results/search', async (req, res) => {
     try {
         const { roll, examName } = req.query;
         const result = await Result.findOne({ roll, examName });
-        if (result) res.json({ found: true, data: result });
-        else res.json({ found: false });
+        
+        if (result) {
+            res.json({ found: true, data: result });
+        } else {
+            res.json({ found: false });
+        }
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
