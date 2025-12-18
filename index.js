@@ -92,6 +92,24 @@ app.delete('/api/notices/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ============ LOGIN SYSTEM ============
+
+// ১. লগিন পেজ দেখানো
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+// ২. লগিন যাচাই করা (API)
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+
+    // পাসওয়ার্ড এখানে সেট করুন (Username: admin, Password: admin123)
+    if (username === 'admin' && password === 'admin123') {
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
+});
 // === রেজাল্ট API ===
 
 // ১. সিঙ্গেল রেজাল্ট আপলোড
