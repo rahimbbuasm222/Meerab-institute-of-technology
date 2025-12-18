@@ -37,16 +37,21 @@ const NoticeSchema = new mongoose.Schema({
 });
 const Notice = mongoose.model('Notice', NoticeSchema);
 
-// রেজাল্ট স্কিমা
+// রেজাল্ট স্কিমা (আপডেট করা হয়েছে)
 const ResultSchema = new mongoose.Schema({
     studentName: String,
+    fatherName: String, // নতুন
+    motherName: String, // নতুন
     roll: String,
+    regNo: String,      // নতুন
     examName: String,
     year: String,
+    institute: String,  // নতুন
     gpa: String,
+    resultStatus: String, // পাস/ফেল
+    marks: Array,       // বিষয়ভিত্তিক নম্বর (Array)
     createdAt: { type: Date, default: Date.now }
 });
-const Result = mongoose.model('Result', ResultSchema);
 
 // ---------------------------------------------
 // ৩. পেজ রাউটিং
